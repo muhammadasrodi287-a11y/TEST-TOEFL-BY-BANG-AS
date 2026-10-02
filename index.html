@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEFL Master - Simulasi & Latihan Tes TOEFL Interaktif</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        toefl: {
+                            blue: '#0F2C59',
+                            lightBlue: '#185ADB',
+                            gold: '#FFC436',
+                            bg: '#F8FAFC',
+                            card: '#FFFFFF',
+                            border: '#E2E8F0'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            color: #1E293B;
+            user-select: none;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #F1F5F9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+        .audio-wave-bar {
+            animation: pulse 1.2s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { height: 8px; }
+            50% { height: 28px; }
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Top Header / App Bar -->
+    <header class="bg-toefl-blue text-white h-16 px-6 flex items-center justify-between shadow-md z-20 shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="bg-toefl-gold text-toefl-blue font-black px-2.5 py-1 rounded text-lg tracking-wider">TOEFL</div>
+            <span class="font-bold text-lg hidden sm:inline tracking-wide">Master Simulator</span>
+            <span id="mode-badge" class="bg-blue-800 text-blue-200 text-xs px-2.5 py-0.5 rounded-full font-medium ml-2">Exam Mode</span>
+        </div>
+
+        <!-- Timer & Quick Status (Visible during test) -->
+        <div id="test-header-controls" class="hidden flex items-center space-x-6">
+            <div class="flex items-center space-x-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                <i class="fa-regular font-bold fa-clock text-toefl-gold"></i>
+                <span id="timer-display" class="font-mono text-lg font-bold text-white">55:00</span>
+            </div>
+            <button onclick="confirmSubmitCurrentSection()" class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-1.5 rounded-lg transition text-sm flex items-center space-x-1">
+                <i class="fa-solid fa-paper-plane mr-1"></i> <span id="submit-btn-label">Selesaikan Sesi Ini</span>
+            </button>
+        </div>
+
+        <!-- Header Nav (Visible in Home/Result) -->
+        <div id="main-header-nav" class="flex items-center space-x-4">
+            <button onclick="showHomeView()" class="hover:text-toefl-gold text-sm font-medium transition flex items-center space-x-1">
+                <i class="fa-solid fa-house"></i>
+                <span>Beranda</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 relative overflow-hidden flex flex-col">
+
+        <!-- VIEW 1: HOME & MODE SELECTION -->
+        <section id="view-home" class="flex-1 overflow-y-auto p-6 md:p-10 max-w-6xl mx-auto w-full custom-scrollbar">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-toefl-blue to-toefl-lightBlue text-white rounded-2xl p-8 mb-8 shadow-xl relative overflow-hidden">
+                <div class="relative z-10 max-w-2xl">
+                    <span class="bg-toefl-gold text-toefl-blue text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block">Official Standard Format</span>
+                    <h1 class="text-3xl md:text-4xl font-extrabold mb-3">Simulasi & Latihan Tes TOEFL ITP</h1>
+                    <p class="text-blue-100 text-sm md:text-base mb-6 leading-relaxed">
+                        Tingkatkan skor TOEFL Anda dengan latihan 75 soal acak berstandar ETS. Dilengkapi dialog audio interaktif pria & wanita, timer resmi per sesi, dan evaluasi hasil lengkap setelah semua sesi selesai.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="startTestMode('full', 'exam')" class="bg-toefl-gold hover:bg-yellow-400 text-toefl-blue font-bold px-6 py-3 rounded-xl shadow-lg transition transform hover:-translate-y-0.5 flex items-center">
+                            <i class="fa-solid fa-play mr-2"></i> Mulai Tes Lengkap (3 Sesi / 75 Soal)
+                        </button>
+                    </div>
+                </div>
+                <i class="fa-solid fa-graduation-cap absolute -right-6 -bottom-8 text-white/10 text-[200px] pointer-events-none"></i>
+            </div>
+
+            <!-- Section Selection Grid -->
+            <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+                <i class="fa-solid fa-layer-group text-toefl-lightBlue mr-2"></i> Latihan Per Bagian / Mode Sesi
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <!-- Listening Card -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition flex flex-col">
+                    <div class="w-12 h-12 bg-blue-100 text-toefl-lightBlue rounded-xl flex items-center justify-center text-xl font-bold mb-4">
+                        <i class="fa-solid fa-headphones"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-800 mb-1">1. Listening Comprehension</h3>
+                    <p class="text-xs text-slate-500 mb-4 flex-1">Dialog interaktif audio dengan percakapan dua arah (pria & wanita) serta dialog perkuliahan.</p>
+                    <div class="text-xs font-medium text-slate-600 mb-4 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                        <div><i class="fa-regular fa-clock mr-1"></i> Estimasi: 20 Menit</div>
+                        <div class="mt-1"><i class="fa-regular fa-file-lines mr-1"></i> Soal: 25 Soal (Diacak)</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="startTestMode('listening', 'exam')" class="w-full bg-toefl-blue hover:bg-blue-900 text-white font-semibold py-2 rounded-lg text-xs transition">
+                            Simulasi Sesi
+                        </button>
+                        <button onclick="startTestMode('listening', 'practice')" class="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold py-2 rounded-lg text-xs transition border border-emerald-200">
+                            Mode Latihan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Structure Card -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition flex flex-col">
+                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-xl font-bold mb-4">
+                        <i class="fa-solid fa-pen-nib"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-800 mb-1">2. Structure & Written Expression</h3>
+                    <p class="text-xs text-slate-500 mb-4 flex-1">Pengujian tata bahasa baku Inggris, kelengkapan klausa, dan identifikasi kesalahan (Error Identification).</p>
+                    <div class="text-xs font-medium text-slate-600 mb-4 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                        <div><i class="fa-regular fa-clock mr-1"></i> Estimasi: 15 Menit</div>
+                        <div class="mt-1"><i class="fa-regular fa-file-lines mr-1"></i> Soal: 25 Soal (Diacak)</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="startTestMode('structure', 'exam')" class="w-full bg-toefl-blue hover:bg-blue-900 text-white font-semibold py-2 rounded-lg text-xs transition">
+                            Simulasi Sesi
+                        </button>
+                        <button onclick="startTestMode('structure', 'practice')" class="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold py-2 rounded-lg text-xs transition border border-emerald-200">
+                            Mode Latihan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reading Card -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition flex flex-col">
+                    <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center text-xl font-bold mb-4">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-800 mb-1">3. Reading Comprehension</h3>
+                    <p class="text-xs text-slate-500 mb-4 flex-1">Pemahaman wacana akademik, analisis topik utama, inferensi wacana, dan penguasaan kosakata.</p>
+                    <div class="text-xs font-medium text-slate-600 mb-4 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                        <div><i class="fa-regular fa-clock mr-1"></i> Estimasi: 20 Menit</div>
+                        <div class="mt-1"><i class="fa-regular fa-file-lines mr-1"></i> Soal: 25 Soal (Diacak)</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="startTestMode('reading', 'exam')" class="w-full bg-toefl-blue hover:bg-blue-900 text-white font-semibold py-2 rounded-lg text-xs transition">
+                            Simulasi Sesi
+                        </button>
+                        <button onclick="startTestMode('reading', 'practice')" class="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold py-2 rounded-lg text-xs transition border border-emerald-200">
+                            Mode Latihan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Info Footer -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-200 pt-6 text-slate-600 text-xs">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-shuffle text-emerald-500 text-lg"></i>
+                    <span><strong>Soal Berbeda Tiap Tes:</strong> Bank soal diacak secara dinamis di setiap pembuatan sesi baru.</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-users text-toefl-lightBlue text-lg"></i>
+                    <span><strong>Audio Laki-Laki & Perempuan:</strong> Latihan dialog Listening dengan pengisian suara dwigender.</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-square-poll-vertical text-amber-500 text-lg"></i>
+                    <span><strong>Evaluasi Komprehensif:</strong> Laporan hasil dan prediksi skor resmi keluar setelah semua sesi tuntas.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: EXAM INTERFACE (Split-view) -->
+        <section id="view-test" class="hidden flex-1 flex flex-col md:flex-row overflow-hidden relative bg-slate-100">
+            
+            <!-- Left Side Panel (Passage / Audio Visualizer) -->
+            <div id="left-panel" class="w-full md:w-1/2 bg-white border-r border-slate-200 flex flex-col h-1/2 md:h-full overflow-hidden shadow-sm">
+                <!-- Panel Header -->
+                <div class="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center justify-between shrink-0">
+                    <span id="left-panel-title" class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center">
+                        <i class="fa-solid fa-file-text mr-2 text-toefl-lightBlue"></i> Reading Passage
+                    </span>
+                    <span id="section-indicator" class="text-xs font-semibold px-2.5 py-1 bg-toefl-blue text-white rounded-md">LISTENING</span>
+                </div>
+                
+                <!-- Left Content Area (Passage or Audio Controller) -->
+                <div id="left-panel-content" class="p-6 overflow-y-auto flex-1 custom-scrollbar text-slate-800 leading-relaxed text-sm md:text-base">
+                    <!-- Dynamic Content Inserted via JS -->
+                </div>
+            </div>
+
+            <!-- Right Side Panel (Questions & Answer Selection) -->
+            <div id="right-panel" class="w-full md:w-1/2 bg-slate-50 flex flex-col h-1/2 md:h-full overflow-hidden">
+                
+                <!-- Question Header / Status Bar -->
+                <div class="bg-white px-6 py-3 border-b border-slate-200 flex items-center justify-between shrink-0">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs text-slate-500 uppercase font-semibold">Soal</span>
+                        <span id="question-number-badge" class="bg-toefl-blue text-white text-xs font-bold px-2.5 py-1 rounded-md">1 dari 25</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="toggleBookmark()" id="bookmark-btn" class="text-slate-400 hover:text-amber-500 text-sm p-1.5 rounded transition">
+                            <i class="fa-regular fa-bookmark"></i> <span class="text-xs font-medium">Ragu-ragu</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Question Area -->
+                <div class="flex-1 overflow-y-auto p-6 custom-scrollbar flex flex-col justify-between">
+                    <div>
+                        <!-- Question Text Prompt -->
+                        <div id="question-text" class="text-slate-800 font-semibold text-base md:text-lg mb-6 leading-normal">
+                            <!-- Question Text Here -->
+                        </div>
+
+                        <!-- Answer Options -->
+                        <div id="options-container" class="space-y-3">
+                            <!-- Options Generated Here -->
+                        </div>
+
+                        <!-- Practice Mode Explanation Box (Hidden in Exam Mode) -->
+                        <div id="explanation-box" class="hidden mt-6 p-4 rounded-xl bg-blue-50 border border-blue-200 text-xs md:text-sm text-slate-700">
+                            <div class="font-bold text-toefl-blue mb-1 flex items-center">
+                                <i class="fa-solid fa-circle-info mr-1.5 text-toefl-lightBlue"></i> Pembahasan Lengkap:
+                            </div>
+                            <p id="explanation-text" class="leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question Navigation Footer -->
+                <div class="bg-white px-6 py-3 border-t border-slate-200 flex items-center justify-between shrink-0">
+                    <button onclick="prevQuestion()" id="prev-btn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg text-sm transition flex items-center">
+                        <i class="fa-solid fa-chevron-left mr-2"></i> Sebelum
+                    </button>
+
+                    <button onclick="toggleGridModal()" class="text-slate-600 hover:text-toefl-blue text-sm font-semibold flex items-center space-x-1 px-3 py-2 rounded hover:bg-slate-100">
+                        <i class="fa-solid fa-border-all"></i>
+                        <span class="hidden sm:inline">Daftar Soal</span>
+                    </button>
+
+                    <button onclick="nextQuestion()" id="next-btn" class="px-5 py-2 bg-toefl-blue hover:bg-blue-900 text-white font-medium rounded-lg text-sm transition flex items-center">
+                        Lanjut <i class="fa-solid fa-chevron-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: RESULT & EVALUATION REPORT -->
+        <section id="view-result" class="hidden flex-1 overflow-y-auto p-6 md:p-10 max-w-5xl mx-auto w-full custom-scrollbar">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden mb-8">
+                <!-- Result Header -->
+                <div class="bg-gradient-to-r from-toefl-blue to-toefl-lightBlue p-8 text-white text-center relative">
+                    <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">Hasil Evaluasi & Score Report Final</span>
+                    <h2 class="text-3xl font-extrabold mb-1">Perkiraan Skor TOEFL ITP Anda</h2>
+                    <p class="text-blue-200 text-sm">Berdasarkan Standar Konversi Skala ETS TOEFL ITP (310 - 677)</p>
+                    
+                    <div class="mt-6 inline-flex flex-col items-center justify-center bg-white text-toefl-blue rounded-2xl px-10 py-5 shadow-lg border-4 border-toefl-gold">
+                        <span id="converted-score" class="text-5xl md:text-6xl font-black tracking-tight">550</span>
+                        <span id="score-scale-label" class="text-xs font-bold text-slate-500 uppercase mt-1">Skala Skor TOEFL ITP</span>
+                    </div>
+                </div>
+
+                <!-- Breakdown Cards -->
+                <div class="p-6 md:p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
+                            <span class="text-xs font-bold text-slate-500 uppercase">1. Listening</span>
+                            <div id="listening-score-breakdown" class="text-xl font-bold text-slate-800 mt-1">0 / 25</div>
+                            <span id="listening-converted" class="text-xs text-toefl-lightBlue font-semibold">Skor Sesi: -</span>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
+                            <span class="text-xs font-bold text-slate-500 uppercase">2. Structure</span>
+                            <div id="structure-score-breakdown" class="text-xl font-bold text-slate-800 mt-1">0 / 25</div>
+                            <span id="structure-converted" class="text-xs text-amber-600 font-semibold">Skor Sesi: -</span>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
+                            <span class="text-xs font-bold text-slate-500 uppercase">3. Reading</span>
+                            <div id="reading-score-breakdown" class="text-xl font-bold text-slate-800 mt-1">0 / 25</div>
+                            <span id="reading-converted" class="text-xs text-purple-600 font-semibold">Skor Sesi: -</span>
+                        </div>
+                    </div>
+
+                    <!-- Level & Proficiency Analysis -->
+                    <div class="bg-blue-50/60 border border-blue-200 rounded-xl p-6 mb-8">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-toefl-lightBlue text-white flex items-center justify-center font-bold text-lg">
+                                <i class="fa-solid fa-award"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-slate-800">Tingkat Kemampuan (Proficiency Level):</h3>
+                                <span id="proficiency-level" class="text-sm font-extrabold text-toefl-lightBlue">Intermediate Level (CEFR B1/B2)</span>
+                            </div>
+                        </div>
+                        <p id="proficiency-desc" class="text-sm text-slate-600 leading-relaxed">
+                            Analisis kemampuan berdasarkan performa keseluruhan 75 soal pada seluruh sesi yang telah diselesaikan.
+                        </p>
+                    </div>
+
+                    <!-- Personalized Action Plan & Study Recommendations -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                            <i class="fa-solid fa-lightbulb text-toefl-gold mr-2"></i> Rekomendasi Belajar & Rencana Aksi Personal
+                        </h3>
+                        <div id="recommendations-container" class="space-y-3 text-sm text-slate-700">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Review Answers Button -->
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 border-t border-slate-200 pt-6">
+                        <button onclick="startReviewAnswers()" class="bg-toefl-blue hover:bg-blue-900 text-white font-bold px-6 py-2.5 rounded-xl transition text-sm flex items-center justify-center">
+                            <i class="fa-solid fa-magnifying-glass mr-2"></i> Review Pembahasan 75 Soal
+                        </button>
+                        <button onclick="showHomeView()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-6 py-2.5 rounded-xl transition text-sm flex items-center justify-center">
+                            <i class="fa-solid fa-rotate-right mr-2"></i> Kembali ke Beranda
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal: Question Grid Selector -->
+    <div id="grid-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-base flex items-center">
+                    <i class="fa-solid fa-table-cells mr-2 text-toefl-lightBlue"></i> Navigasi Soal Sesi Ini
+                </h3>
+                <button onclick="toggleGridModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="text-xs text-slate-500 mb-4 flex items-center space-x-4">
+                <span class="flex items-center"><span class="w-3 h-3 bg-toefl-blue rounded-full mr-1 inline-block"></span> Dijawab</span>
+                <span class="flex items-center"><span class="w-3 h-3 bg-amber-400 rounded-full mr-1 inline-block"></span> Ragu-ragu</span>
+                <span class="flex items-center"><span class="w-3 h-3 bg-slate-200 rounded-full mr-1 inline-block"></span> Belum</span>
+            </div>
+
+            <div id="question-grid" class="grid grid-cols-5 gap-2.5 max-h-64 overflow-y-auto p-1 custom-scrollbar">
+                <!-- Grid buttons inserted dynamically -->
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button onclick="toggleGridModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-lg text-xs transition">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* 
+         * TOEFL COMPREHENSIVE QUESTION BANK (25 LISTENING, 25 STRUCTURE, 25 READING = 75 TOTAL)
+         */
+        const rawQuestionBank = {
+            listening: [
+                {
+                    dialogue: [
+                        { speaker: "Woman", text: "Did you manage to turn in the research paper to Professor Smith before 5 PM?" },
+                        { speaker: "Man", text: "I barely made it! The printer in the library jammed twice, but I got there right as he was locking his office door." }
+                    ],
+                    question: "What does the man imply?",
+                    options: [
+                        "A) He was unable to submit the paper on time.",
+                        "B) He had to ask for an extension from Professor Smith.",
+                        "C) He submitted his paper just in time.",
+                        "D) He couldn't find the professor's office."
+                    ],
+                    correct: 2,
+                    explanation: "'Barely made it' dan 'right as he was locking his office door' mengindikasikan bahwa ia berhasil mengumpulkan tugas tepat sebelum terlambat."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Man", text: "Are you going to attend the career orientation workshop this afternoon?" },
+                        { speaker: "Woman", text: "I was planning to, but I have to cover for Sarah at the biology lab from one to four." }
+                    ],
+                    question: "What will the woman probably do this afternoon?",
+                    options: [
+                        "A) Attend the orientation workshop.",
+                        "B) Work in the biology laboratory.",
+                        "C) Study for her upcoming biology exam.",
+                        "D) Go out to eat with Sarah."
+                    ],
+                    correct: 1,
+                    explanation: "Wanita tersebut harus menggantikan (cover for) Sarah di laboratorium biologi dari jam 1 sampai 4, sehingga ia tidak bisa menghadiri workshop."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Woman", text: "I can't seem to get this statistics problem solved. I've been working on it for two hours!" },
+                        { speaker: "Man", text: "Why don't we head down to the tutoring center? Mark is working the desk today and he's brilliant at stats." }
+                    ],
+                    question: "What does the man suggest doing?",
+                    options: [
+                        "A) Taking a two-hour break from studying.",
+                        "B) Asking Mark at the tutoring center for help.",
+                        "C) Working on a different subject instead.",
+                        "D) Trying to solve the problem by themselves."
+                    ],
+                    correct: 1,
+                    explanation: "Pria tersebut menyarankan untuk pergi ke tutoring center karena Mark sanggup membantu pelajaran statistik."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Man", text: "I heard the campus shuttle service is reducing its evening routes starting next week." },
+                        { speaker: "Woman", text: "Oh no! That means I'll either have to walk back to my dorm in the dark or buy a bicycle." }
+                    ],
+                    question: "What is the woman's reaction to the news?",
+                    options: [
+                        "A) She is excited about buying a bicycle.",
+                        "B) She is concerned about how she will return to her dorm.",
+                        "C) She plans to drive her own car to campus.",
+                        "D) She thinks the new bus route will be more efficient."
+                    ],
+                    correct: 1,
+                    explanation: "Pengurangan jadwal bus malam membuat wanita tersebut khawatir mengenai moda transportasi kembali ke asramanya."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Woman", text: "Have you seen the syllabus for Advanced Microeconomics? The reading list is huge!" },
+                        { speaker: "Man", text: "Don't panic yet. Professor Adams usually assigns only a few chapters from each textbook." }
+                    ],
+                    question: "What does the man mean?",
+                    options: [
+                        "A) The students must read every book on the list.",
+                        "B) The professor will cancel the course reading requirement.",
+                        "C) The actual reading workload won't be as heavy as it looks.",
+                        "D) Professor Adams will change the textbook soon."
+                    ],
+                    correct: 2,
+                    explanation: "Pria tersebut menenangkan wanita tersebut dengan menjelaskan bahwa profesor tidak mewajibkan membaca seluruh isi buku."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Man", text: "Excuse me, do you know if the art gallery on the second floor is open today?" },
+                        { speaker: "Woman", text: "It's closed for renovation until Friday, but the main museum wing on the first floor is open." }
+                    ],
+                    question: "What does the woman tell the man?",
+                    options: [
+                        "A) The entire museum is closed today.",
+                        "B) The art gallery cannot be visited right now.",
+                        "C) The second floor is host to a new exhibition.",
+                        "D) He should return on Saturday morning."
+                    ],
+                    correct: 1,
+                    explanation: "Galeri seni di lantai dua sedang ditutup untuk renovasi (*closed for renovation*)."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Woman", text: "My apartment lease expires at the end of next month, and I still haven't found a roommate." },
+                        { speaker: "Man", text: "Have you checked the student bulletin board in the campus center? There are always posts for roommates." }
+                    ],
+                    question: "What advice does the man give?",
+                    options: [
+                        "A) Move out of the apartment immediately.",
+                        "B) Look at the notices on the student bulletin board.",
+                        "C) Ask the landlord for a discount.",
+                        "D) Rent a room by herself."
+                    ],
+                    correct: 1,
+                    explanation: "Pria tersebut menyarankan melihat papan pengumuman mahasiswa (*student bulletin board*)."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Man", text: "I'm thinking about taking French Literature next semester. What did you think of it?" },
+                        { speaker: "Woman", text: "The lectures were fascinating, but the weekly essay assignments were extremely demanding." }
+                    ],
+                    question: "What does the woman say about the class?",
+                    options: [
+                        "A) The lectures were boring.",
+                        "B) The course required a lot of writing.",
+                        "C) The professor was very strict with attendance.",
+                        "D) It was an easy class to get an A in."
+                    ],
+                    correct: 1,
+                    explanation: "'Weekly essay assignments were extremely demanding' berarti kelas tersebut menuntut banyak tugas menulis esai."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Woman", text: "The weather forecast says it's going to rain heavily all weekend." },
+                        { speaker: "Man", text: "Well, there goes our plan for a hiking trip in the mountains!" }
+                    ],
+                    question: "What does the man mean?",
+                    options: [
+                        "A) They should go hiking despite the rain.",
+                        "B) They will likely have to cancel their outdoor trip.",
+                        "C) He prefers hiking in rainy weather.",
+                        "D) He wants to change the location of the hike."
+                    ],
+                    correct: 1,
+                    explanation: "'There goes our plan' adalah idiom yang berarti rencana mereka terancam batal karena hujan deras."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Man", text: "Is there any room left in the morning section of Chemistry 101?" },
+                        { speaker: "Woman", text: "That section filled up during early registration, but there are still seats in the 2 PM class." }
+                    ],
+                    question: "What does the woman mean?",
+                    options: [
+                        "A) The morning class is completely full.",
+                        "B) Chemistry 101 is no longer offered.",
+                        "C) The man can register for the morning class.",
+                        "D) All sections of Chemistry 101 are closed."
+                    ],
+                    correct: 0,
+                    explanation: "Kelas pagi sudah penuh saat registrasi awal ('filled up during early registration')."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Woman", text: "I can't believe how expensive textbooks are this semester!" },
+                        { speaker: "Man", text: "You should look for digital versions online or buy used copies from upperclassmen." }
+                    ],
+                    question: "What does the man suggest?",
+                    options: [
+                        "A) Buying brand new textbooks at the bookstore.",
+                        "B) Finding cheaper alternatives to new print books.",
+                        "C) Borrowing money from the university.",
+                        "D) Asking professors to provide free materials."
+                    ],
+                    correct: 1,
+                    explanation: "Pria tersebut menyarankan mencari e-book atau membeli buku bekas dari kakak tingkat."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Man", text: "Do you mind if I borrow your laptop for an hour? Mine won't connect to the Wi-Fi." },
+                        { speaker: "Woman", text: "Normally I wouldn't mind, but I'm in the middle of a timed online quiz right now." }
+                    ],
+                    question: "What will the woman probably do?",
+                    options: [
+                        "A) Lend the man her laptop immediately.",
+                        "B) Refuse to lend her laptop at this moment.",
+                        "C) Help the man fix his Wi-Fi connection.",
+                        "D) Finish her quiz on the man's laptop."
+                    ],
+                    correct: 1,
+                    explanation: "Wanita tersebut sedang mengerjakan kuis online berwaktu, sehingga tidak bisa meminjamkannya saat ini."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Woman", text: "Did you hear that the cafeteria is going to offer vegetarian and vegan meals starting Monday?" },
+                        { speaker: "Man", text: "It's about time! Students have been petitioning for that for two years." }
+                    ],
+                    question: "What does the man mean?",
+                    options: [
+                        "A) He thinks the decision is overdue.",
+                        "B) He doesn't like vegetarian food.",
+                        "C) He wishes the change had happened earlier today.",
+                        "D) He thinks two years is too fast for a decision."
+                    ],
+                    correct: 0,
+                    explanation: "'It's about time!' mengindikasikan bahwa keputusan tersebut memang sudah lama dinantikan dan seharusnya sudah terlaksana sejak dulu."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Man", text: "I tried calling the registrar's office all morning, but the line was constantly busy." },
+                        { speaker: "Woman", text: "Why don't you send them an email? They usually reply within a couple of hours." }
+                    ],
+                    question: "What option does the woman suggest?",
+                    options: [
+                        "A) Visiting the office in person.",
+                        "B) Contacting the registrar via electronic mail.",
+                        "C) Calling back later in the evening.",
+                        "D) Waiting until tomorrow to register."
+                    ],
+                    correct: 1,
+                    explanation: "Wanita tersebut menyarankan menghubungi via surel (*email*) karena responnya cepat."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Woman", text: "How did your presentation go in History class?" },
+                        { speaker: "Man", text: "It went surprisingly well! The audience asked great questions, and the professor praised my research." }
+                    ],
+                    question: "How does the man feel about his presentation?",
+                    options: [
+                        "A) Disappointed by the questions.",
+                        "B) Satisfied with the outcome.",
+                        "C) Nervous about his grade.",
+                        "D) Surprised that the professor was absent."
+                    ],
+                    correct: 1,
+                    explanation: "Pria tersebut merasa puas ('went surprisingly well', 'profesor memuji ilmunya')."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Man", text: "Should we take a taxi or the subway to the airport tomorrow morning?" },
+                        { speaker: "Woman", text: "During morning rush hour, the subway is much faster than sitting in traffic." }
+                    ],
+                    question: "What does the woman imply?",
+                    options: [
+                        "A) They should take a taxi.",
+                        "B) They should travel by subway.",
+                        "C) They should leave early in the evening.",
+                        "D) Traffic will not be a problem."
+                    ],
+                    correct: 1,
+                    explanation: "Wanita mengimplikasikan memilih keretapi bawah tanah (*subway*) untuk menghindari kemacetan jam sibuk."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Woman", text: "I heard you got an internship at the environmental research center!" },
+                        { speaker: "Man", text: "Yes! I can't wait to start working with Dr. Garcia on marine biology." }
+                    ],
+                    question: "What is the man's attitude toward the internship?",
+                    options: [
+                        "A) He is hesitant.",
+                        "B) He is enthusiastic.",
+                        "C) He is indifferent.",
+                        "D) He is worried about the workload."
+                    ],
+                    correct: 1,
+                    explanation: "'I can't wait to start' menunjukkan rasa antusiasme (*enthusiastic*) tinggi."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Man", text: "Could you tell me where the reserve reading room is located?" },
+                        { speaker: "Woman", text: "Go past the main desk, take the elevator to the third floor, and it's right on your left." }
+                    ],
+                    question: "Where is the reserve reading room?",
+                    options: [
+                        "A) Next to the main desk on the first floor.",
+                        "B) On the third floor to the left of the elevator.",
+                        "C) On the second floor past the stairs.",
+                        "D) Outside the library building."
+                    ],
+                    correct: 1,
+                    explanation: "Petunjuk jalan mengarah ke lantai 3 sebelah kiri lift."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Woman", text: "Are you going to the concert at the student center tonight?" },
+                        { speaker: "Man", text: "I'd love to, but I have a mid-term exam tomorrow morning at eight." }
+                    ],
+                    question: "What will the man probably do tonight?",
+                    options: [
+                        "A) Go to the concert.",
+                        "B) Study for his examination.",
+                        "C) Sleep early without studying.",
+                        "D) Organize a study group."
+                    ],
+                    correct: 1,
+                    explanation: "Pria tersebut tidak bisa datang ke konser karena harus belajar persiapan ujian esok harinya."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Man", text: "Do you know if Professor Henderson accepts late assignments?" },
+                        { speaker: "Woman", text: "Only if you have an official medical excuse from the campus clinic." }
+                    ],
+                    question: "Under what condition will Professor Henderson accept late work?",
+                    options: [
+                        "A) If the student pays a fee.",
+                        "B) If the student provides a medical note.",
+                        "C) If the assignment is submitted within 24 hours.",
+                        "D) He never accepts late assignments."
+                    ],
+                    correct: 1,
+                    explanation: "Profesor hanya menerima alasan keterlambatan jika disertai surat keterangan medis resmi (*official medical excuse*)."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Woman", text: "I think I left my jacket in the lecture hall after Psychology class." },
+                        { speaker: "Man", text: "You should check with campus security; people usually bring lost items there." }
+                    ],
+                    question: "What does the man suggest?",
+                    options: [
+                        "A) Buying a new jacket.",
+                        "B) Asking the psychology professor.",
+                        "C) Contacting campus security.",
+                        "D) Searching the lecture hall again."
+                    ],
+                    correct: 2,
+                    explanation: "Pria tersebut menyarankan menghubungi petugas keamanan kampus (*campus security*)."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Man", text: "Would you like to join our study group for Physics?" },
+                        { speaker: "Woman", text: "I'd be glad to! When and where do you usually meet?" }
+                    ],
+                    question: "How does the woman respond to the invitation?",
+                    options: [
+                        "A) She declines the offer.",
+                        "B) She accepts the invitation.",
+                        "C) She asks to change the subject.",
+                        "D) She says she is too busy."
+                    ],
+                    correct: 1,
+                    explanation: "'I'd be glad to!' merupakan ungkapan menerima undangan (*accepts the invitation*)."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Woman", text: "The university library is closing early today due to severe weather." },
+                        { speaker: "Man", text: "That's fine; I can finish my paper on my computer in the dormitory." }
+                    ],
+                    question: "What will the man do?",
+                    options: [
+                        "A) Stay in the library until it closes.",
+                        "B) Continue working on his paper in his room.",
+                        "C) Ask the library staff to stay open.",
+                        "D) Stop working on his paper."
+                    ],
+                    correct: 1,
+                    explanation: "Pria tersebut akan melanjutkan pekerjaannya di laptop dalam asrama (*dormitory*)."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Man", text: "Did you buy tickets for the theater performance this weekend?" },
+                        { speaker: "Woman", text: "I tried to, but they were completely sold out within ten minutes." }
+                    ],
+                    question: "What happened when the woman tried to get tickets?",
+                    options: [
+                        "A) She bought three tickets.",
+                        "B) She wasn't able to get any tickets.",
+                        "C) She got a student discount.",
+                        "D) She reserved tickets over the phone."
+                    ],
+                    correct: 1,
+                    explanation: "Tiket pertunjukan teater sudah habis terjual (*sold out*)."
+                },
+                {
+                    dialogue: [
+                        { speaker: "Woman", text: "I heard the international food festival is taking place in the quad today." },
+                        { speaker: "Man", text: "Let's grab lunch there after our English literature class!" }
+                    ],
+                    question: "What do the speakers plan to do?",
+                    options: [
+                        "A) Skip their literature class.",
+                        "B) Eat lunch at the food festival together.",
+                        "C) Cook international dishes.",
+                        "D) Organize a food drive."
+                    ],
+                    correct: 1,
+                    explanation: "Mereka berencana makan siang bersama di festival makanan internasional setelah selesai kelas."
+                }
+            ],
+            structure: [
+                {
+                    question: "Not until the late 19th century _________ recognized as a distinct branch of biological science.",
+                    options: ["A) ecology became", "B) did ecology become", "C) ecology had become", "D) became ecology"],
+                    correct: 1,
+                    explanation: "Inversi tata bahasa: Setelah frasa negatif di awal kalimat ('Not until...'), gunakan auxiliary verb + S + Verb1 ('did ecology become')."
+                },
+                {
+                    question: "The atmosphere of Jupiter, ________ mainly of hydrogen and helium, exhibits complex storm patterns.",
+                    options: ["A) composing", "B) is composed", "C) composed", "D) it is composed"],
+                    correct: 2,
+                    explanation: "Reduced relative clause pasif: 'which is composed' disederhanakan menjadi 'composed'."
+                },
+                {
+                    question: "Photosynthesis is the process by which green plants produce food using sunlight, water, and carbon dioxide to synthesize carbohydrates <u class='text-red-600 font-bold'>efficient</u>.",
+                    options: ["A) by which", "B) using", "C) to synthesize", "D) efficient"],
+                    correct: 3,
+                    explanation: "Pilihan D salah. Menerangkan kata kerja 'synthesize' memerlukan kata keterangan adverb ('efficiently'), bukan adjective ('efficient')."
+                },
+                {
+                    question: "Rarely _________ species of flora found in desert climates without specialized root adaptations.",
+                    options: ["A) can", "B) are", "C) is", "D) do"],
+                    correct: 1,
+                    explanation: "Inversi akibat adverbia negatif 'Rarely': Verb penyesuai subjek jamak 'species' adalah 'are'."
+                },
+                {
+                    question: "________ severe climate change, many prehistoric mammals were unable to survive into the modern era.",
+                    options: ["A) Because", "B) Due to", "C) Although", "D) Despite of"],
+                    correct: 1,
+                    explanation: "'Due to' diikuti frasa kata benda ('severe climate change'). 'Because' harus diikuti klausa utuh."
+                },
+                {
+                    question: "The higher the altitude above sea level, ________ the atmospheric pressure becomes.",
+                    options: ["A) lower", "B) the lower", "C) it is lower", "D) lower than"],
+                    correct: 1,
+                    explanation: "Bentuk double comparative: 'The higher..., the lower...'."
+                },
+                {
+                    question: "Neither the professor nor his research assistants _________ able to explain the anomalous lab results.",
+                    options: ["A) was", "B) were", "C) has", "D) is"],
+                    correct: 1,
+                    explanation: "Pada 'Neither... nor...', subjek terdekat dengan kata kerja ('his research assistants' - jamak) menentukan verb ('were')."
+                },
+                {
+                    question: "Penicillin, <u class='text-red-600 font-bold'>who</u> was discovered by Alexander Fleming in 1928, revolutionized modern medicine.",
+                    options: ["A) who", "B) was discovered", "C) in 1928", "D) revolutionized"],
+                    correct: 0,
+                    explanation: "Penggunaan relative pronoun 'who' salah karena merujuk ke Benda (Penicillin). Seharusnya menggunakan 'which'."
+                },
+                {
+                    question: "Had the engineers inspected the dam earlier, the catastrophic leak _________ prevented.",
+                    options: ["A) would be", "B) would have been", "C) was", "D) had been"],
+                    correct: 1,
+                    explanation: "Conditional Sentence Type 3 (Inversion): 'Had + S + V3 ..., S + would have been + V3'."
+                },
+                {
+                    question: "Digital computers process data represented in binary form, ________ consists of sequences of zeros and ones.",
+                    options: ["A) which", "B) that", "C) it", "D) what"],
+                    correct: 0,
+                    explanation: "Non-defining relative clause setelah tanda koma harus menggunakan 'which'."
+                },
+                {
+                    question: "The director required that every applicant _________ a complete portfolio before the interview.",
+                    options: ["A) submits", "B) submit", "C) submitted", "D) will submit"],
+                    correct: 1,
+                    explanation: "Subjunctive Verb Structure: 'required that + Subject + Verb in base form (bare infinitive)' -> 'submit'."
+                },
+                {
+                    question: "Unlike traditional fossil fuels, solar power emits <u class='text-red-600 font-bold'>not</u> pollutants during electricity generation.",
+                    options: ["A) Unlike", "B) solar power", "C) not", "D) during"],
+                    correct: 2,
+                    explanation: "Seharusnya menggunakan determinatif 'no' ('emits no pollutants') bukan adverb 'not'."
+                },
+                {
+                    question: "Only after the sun had set _________ to return to their baseline nesting grounds.",
+                    options: ["A) the birds began", "B) did the birds begin", "C) began the birds", "D) the birds had begun"],
+                    correct: 1,
+                    explanation: "Inversi dengan 'Only after...': Aux 'did' + Subject 'the birds' + Verb1 'begin'."
+                },
+                {
+                    question: "Geothermal energy is considered a renewable resource _________ heat is continuously replenished by Earth's core.",
+                    options: ["A) because of", "B) because", "C) in spite of", "D) derived from"],
+                    correct: 1,
+                    explanation: "Diikuti klausa utuh ('heat is continuously replenished'), maka kata hubung yang tepat adalah 'because'."
+                },
+                {
+                    question: "The internal engine components must be lubricated <u class='text-red-600 font-bold'>regular</u> to prevent premature friction damage.",
+                    options: ["A) internal", "B) components", "C) lubricated", "D) regular"],
+                    correct: 3,
+                    explanation: "Menerangkan kata kerja pasif 'lubricated' membutuhkan adverb 'regularly'."
+                },
+                {
+                    question: "In 1911, Marie Curie became the first scientist _________ two Nobel Prizes in different fields.",
+                    options: ["A) to win", "B) winning", "C) won", "D) who win"],
+                    correct: 0,
+                    explanation: "Setelah ordinal number ('the first scientist'), gunakan to-infinitive ('to win')."
+                },
+                {
+                    question: "No sooner had the lecture started _________ the fire alarm began ringing loudly.",
+                    options: ["A) when", "B) than", "C) then", "D) after"],
+                    correct: 1,
+                    explanation: "Pasangan klausa inversi: 'No sooner had ... THAN ...'."
+                },
+                {
+                    question: "Each of the experimental trials <u class='text-red-600 font-bold'>were</u> conducted under strict laboratory conditions.",
+                    options: ["A) Each", "B) experimental", "C) were", "D) conducted"],
+                    correct: 2,
+                    explanation: "Subjek utama adalah 'Each' (tunggal), maka verb seharusnya adalah 'was', bukan 'were'."
+                },
+                {
+                    question: "By the time the new regulations take effect, the corporation _________ its safety protocols.",
+                    options: ["A) will upgrade", "B) will have upgraded", "C) upgraded", "D) has upgraded"],
+                    correct: 1,
+                    explanation: "Future Perfect Tense: 'By the time + Present Tense ..., Subject + WILL HAVE + V3'."
+                },
+                {
+                    question: "In deep marine ecosystems, light penetrates _________ deeper than two hundred meters.",
+                    options: ["A) rarely", "B) never", "C) seldom", "D) not"],
+                    correct: 0,
+                    explanation: "Adverbial modifier 'rarely' mengekspresikan intensitas penetrasi cahaya dengan tepat."
+                },
+                {
+                    question: "The discovery of radar played a <u class='text-red-600 font-bold'>crucially</u> role during the defensive air operations.",
+                    options: ["A) discovery", "B) played", "C) crucially", "D) defensive"],
+                    correct: 2,
+                    explanation: "Menerangkan kata benda 'role' memerlukan adjective 'crucial', bukan adverb 'crucially'."
+                },
+                {
+                    question: "So intense _________ that residents were advised to stay indoors until emergency crews arrived.",
+                    options: ["A) the blizzard was", "B) was the blizzard", "C) the blizzard had been", "D) being the blizzard"],
+                    correct: 1,
+                    explanation: "Inversi dengan 'So + Adjective...': 'So intense WAS the blizzard that...'."
+                },
+                {
+                    question: "Although known primarily for her poetry, Maya Angelou also authored <u class='text-red-600 font-bold'>several remarkable autobiographies works</u>.",
+                    options: ["A) Although", "B) primarily", "C) authored", "D"> "several remarkable autobiographies works"],
+                    correct: 3,
+                    explanation: "Frasa nomina redundan: 'autobiographical works' (adjective + noun)."
+                },
+                {
+                    question: "It was recommended that the project manager _________ the budget proposal before Friday.",
+                    options: ["A) revises", "B) revise", "C) revised", "D) would revise"],
+                    correct: 1,
+                    explanation: "Subjunctive clause: 'It was recommended that + S + base verb (revise)'."
+                },
+                {
+                    question: "Not only _________ store energy efficiently, but lithium-ion batteries also have a low self-discharge rate.",
+                    options: ["A) do they", "B) they do", "C) do", "D) they"],
+                    correct: 0,
+                    explanation: "Inversi 'Not only ...': Aux 'do' + S 'they' + Verb 'store'."
+                }
+            ],
+            reading: [
+                {
+                    passageTitle: "The Evolution of Avian Flight",
+                    passageText: "The evolutionary origins of flight in birds have long been a subject of intense scientific debate. Two primary hypotheses dominate the field: the 'trees-down' (arboreal) model and the 'ground-up' (cursorial) model. The arboreal theory posits that bird ancestors were small, tree-dwelling reptiles that developed gliders to jump between branches. Over time, these gliding structures evolved into powered wings.<br><br>Conversely, the cursorial theory suggests that bipedal terrestrial dinosaurs ran along the ground, using feathered forelimbs for balance or to capture prey. As these proto-wings beat faster to assist acceleration up steep inclines, active flapping flight eventually emerged. Recent fossil discoveries in Liaoning, China, featuring feathered theropod dinosaurs, provide compelling evidence supporting aspects of both theories, suggesting flight evolution was far more nuanced than previously assumed.",
+                    question: "According to the passage, what is the core premise of the arboreal hypothesis?",
+                    options: [
+                        "A) Birds developed wings to escape aquatic predators.",
+                        "B) Tree-dwelling ancestors evolved flight starting from gliding movements.",
+                        "C) Ground-running dinosaurs flapped wings to increase running speed.",
+                        "D) Flight evolved purely as a means to capture airborne insects."
+                    ],
+                    correct: 1,
+                    explanation: "Paragraf 1 menjelaskan bahwa teori arboreal beranggapan leluhur burung tinggal di pohon dan mengembangkan kemampuan terbang diawali dari meluncur (*gliding*)."
+                },
+                {
+                    passageTitle: "The Evolution of Avian Flight",
+                    passageText: "The evolutionary origins of flight in birds have long been a subject of intense scientific debate. Two primary hypotheses dominate the field: the 'trees-down' (arboreal) model and the 'ground-up' (cursorial) model...",
+                    question: "The word 'nuanced' in the last sentence is closest in meaning to:",
+                    options: [
+                        "A) Complex and subtle",
+                        "B) Simple and obvious",
+                        "C) Outdated",
+                        "D) Irrelevant"
+                    ],
+                    correct: 0,
+                    explanation: "'Nuanced' menunjukkan sesuatu yang rumit, memiliki banyak segi, dan halus (*complex and subtle*)."
+                },
+                {
+                    passageTitle: "Deep Sea Hydrothermal Vents",
+                    passageText: "Hydrothermal vents are fissures on the ocean floor that geothermally heat water. Discovered in 1977 near the Galápagos Rift, these extreme environments host thriving biological communities despite total darkness and crushing pressures. Unlike terrestrial ecosystems that rely on sunlight and photosynthesis, hydrothermal vent communities are sustained by chemosynthesis. Chemosynthetic bacteria utilize hydrogen sulfide emitted from the vents to convert inorganic chemicals into organic matter, serving as the foundational primary producers for giant tube worms, blind shrimp, and crabs.",
+                    question: "What is the main energy source for ecosystems surrounding hydrothermal vents?",
+                    options: [
+                        "A) Solar radiation penetrating deep waters",
+                        "B) Photosynthesis carried out by deep-sea algae",
+                        "C) Chemosynthesis powered by chemical emissions like hydrogen sulfide",
+                        "D) Geothermal electricity generated by tectonic plates"
+                    ],
+                    correct: 2,
+                    explanation: "Teks secara eksplisit menyebut ekosistem tersebut bertumpu pada kemosintesis (*chemosynthesis*) memanfaatkan hidrogen sulfida."
+                },
+                {
+                    passageTitle: "Deep Sea Hydrothermal Vents",
+                    passageText: "Hydrothermal vents are fissures on the ocean floor that geothermally heat water. Discovered in 1977 near the Galápagos Rift, these extreme environments host thriving biological communities...",
+                    question: "The word 'fissures' in sentence 1 is closest in meaning to:",
+                    options: ["A) Cracks or openings", "B) Mountains", "C) Ice formations", "D) Deep currents"],
+                    correct: 0,
+                    explanation: "'Fissures' berarti retakan atau celah (*cracks or openings*) pada dasar laut."
+                },
+                {
+                    passageTitle: "The Rosetta Stone",
+                    passageText: "The discovery of the Rosetta Stone in 1799 marked a monumental breakthrough in Egyptology. Carved with a decree issued at Memphis in 196 BCE, the stone features the same text written in three distinct scripts: Ancient Egyptian hieroglyphs, Demotic script, and Ancient Greek. Because scholars could readily translate Ancient Greek, French linguist Jean-François Champollion deciphered the Egyptian hieroglyphs in 1822, unlocking centuries of mysterious ancient history.",
+                    question: "Why was the Rosetta Stone so crucial for deciphering hieroglyphs?",
+                    options: [
+                        "A) It was the oldest Egyptian monument ever found.",
+                        "B) It contained the same text in Greek, which scholars already understood.",
+                        "C) It was written entirely in a simplified modern code.",
+                        "D) It provided a dictionary written by Pharaoh Ptolemy V."
+                    ],
+                    correct: 1,
+                    explanation: "Batu Rosetta sangat krusial karena menyajikan teks yang sama dalam bahasa Yunani Kuno yang sudah dipahami oleh para peneliti."
+                },
+                {
+                    passageTitle: "The Rosetta Stone",
+                    passageText: "The discovery of the Rosetta Stone in 1799 marked a monumental breakthrough in Egyptology...",
+                    question: "The word 'deciphered' in the passage is closest in meaning to:",
+                    options: ["A) Encrypted", "B) Decoded / Interpreted", "C) Destroyed", "D) Ignored"],
+                    correct: 1,
+                    explanation: "'Deciphered' berarti mengartikan atau memecahkan kode (*decoded/interpreted*)."
+                },
+                {
+                    passageTitle: "Urban Heat Islands",
+                    passageText: "An Urban Heat Island (UHI) is a metropolitan area that is significantly warmer than its surrounding rural areas due to human activities. The primary cause is the modification of land surfaces; dark materials like asphalt and concrete absorb solar radiation during the day and re-emit it as thermal heat at night. Additionally, the tall geometry of skyscrapers traps heat between buildings, and anthropogenic waste heat from air conditioners and engines exacerbates the phenomenon.",
+                    question: "Which of the following is NOT mentioned as a cause of Urban Heat Islands?",
+                    options: [
+                        "A) Dark asphalt absorbing heat from the sun",
+                        "B) Heat generated by air conditioning and vehicle engines",
+                        "C) Excessive rural agricultural activities",
+                        "D) Tall buildings trapping thermal energy"
+                    ],
+                    correct: 2,
+                    explanation: "Aktivitas pertanian pedesaan tidak disebutkan sebagai penyebab Urban Heat Island."
+                },
+                {
+                    passageTitle: "Urban Heat Islands",
+                    passageText: "An Urban Heat Island (UHI) is a metropolitan area that is significantly warmer...",
+                    question: "The word 'exacerbates' in the text is closest in meaning to:",
+                    options: ["A) Worsens or aggravates", "B) Reduces", "C) Eliminates", "D) Explains"],
+                    correct: 0,
+                    explanation: "'Exacerbates' berarti memperburuk atau memperparah (*worsens/aggravates*)."
+                },
+                {
+                    passageTitle: "The Science of Sleep",
+                    passageText: "Sleep is divided into two broad categories: Rapid Eye Movement (REM) sleep and non-REM sleep. Non-REM sleep consists of three stages, progressing from light sleep to deep slow-wave sleep. During deep non-REM sleep, the body repairs tissues, builds bone and muscle, and strengthens the immune system. In contrast, REM sleep is characterized by high brain activity, vivid dreaming, and temporary muscle paralysis. It plays a critical role in memory consolidation and emotional regulation.",
+                    question: "What is a major biological function of deep non-REM sleep?",
+                    options: [
+                        "A) Vivid dreaming and active eye movement",
+                        "B) Physical tissue repair and immune system strengthening",
+                        "C) Temporary muscle paralysis",
+                        "D) Complete cessation of brain activity"
+                    ],
+                    correct: 1,
+                    explanation: "Fungsi non-REM tidur dalam dijelaskan sebagai perbaikan jaringan fisik dan penguatan imun tubuh."
+                },
+                {
+                    passageTitle: "The Science of Sleep",
+                    passageText: "Sleep is divided into two broad categories: Rapid Eye Movement (REM) sleep...",
+                    question: "It can be inferred from the text that REM sleep is vital for:",
+                    options: [
+                        "A) Muscle growth",
+                        "B) Cognitive processing and memory storage",
+                        "C) Bone density accumulation",
+                        "D) Digestion acceleration"
+                    ],
+                    correct: 1,
+                    explanation: "'Memory consolidation and emotional regulation' merujuk pada fungsi kognitif dan ingatan."
+                },
+                {
+                    passageTitle: "Plate Tectonics",
+                    passageText: "The theory of plate tectonics revolutionised geology by explaining how Earth's outer shell is divided into massive rigid slabs known as tectonic plates. These plates float upon the semi-fluid asthenosphere beneath them. Where plates converge, colossal forces uplift mountains or force ocean crust down into subduction zones, sparking volcanic arcs and earthquake belts.",
+                    question: "What happens at convergent plate boundaries according to the passage?",
+                    options: [
+                        "A) Plates pull apart to create oceans.",
+                        "B) Mountains are uplifted and subduction zones form.",
+                        "C) Earth's crust completely dissolves.",
+                        "D) Tectonic movement stops entirely."
+                    ],
+                    correct: 1,
+                    explanation: "Pada batas konvergen ('where plates converge'), terangkat pegunungan dan terbentuk zona subduksi."
+                },
+                {
+                    passageTitle: "Plate Tectonics",
+                    passageText: "The theory of plate tectonics revolutionised geology...",
+                    question: "The word 'rigid' is closest in meaning to:",
+                    options: ["A) Stiff and firm", "B) Soft", "C) Liquid", "D) Flexible"],
+                    correct: 0,
+                    explanation: "'Rigid' berarti kaku dan kokoh (*stiff and firm*)."
+                },
+                {
+                    passageTitle: "The Impact of Printing Press",
+                    passageText: "Johannes Gutenberg's invention of the movable type printing press around 1440 transformed European society. Prior to the press, books were painstakingly copied by hand by scribes, making them prohibitively expensive items reserved for nobility and the clergy. Gutenberg's innovation allowed mass production of texts, drastically lowering costs and accelerating the spread of literacy, scientific ideas, and religious reform across the continent.",
+                    question: "What was a direct consequence of Gutenberg's movable type press?",
+                    options: [
+                        "A) Books became more expensive.",
+                        "B) The spread of literacy and ideas accelerated rapidly.",
+                        "C) Scribes became the most powerful social class.",
+                        "D) Hand-copied books replaced printed material."
+                    ],
+                    correct: 1,
+                    explanation: "Dampak langsungnya adalah penurunan biaya produksi dan percepatan penyebaran literasi serta ide-ide baru."
+                },
+                {
+                    passageTitle: "The Impact of Printing Press",
+                    passageText: "Johannes Gutenberg's invention of the movable type printing press around 1440...",
+                    question: "The word 'prohibitively' in the text implies that book prices were:",
+                    options: ["A) Very cheap", "B) Unreasonably high", "C) Fairly calculated", "D) Fluctuating"],
+                    correct: 1,
+                    explanation: "'Prohibitively expensive' bermakna harganya sangat tinggi sehingga membatasi pembeli biasa (*unreasonably high*)."
+                },
+                {
+                    passageTitle: "Bioluminescence in Marine Organisms",
+                    passageText: "Bioluminescence—the production and emission of light by a living organism—is widespread in ocean environments. Light is generated through a chemical reaction where the enzyme luciferase oxidizes the substrate luciferin. Deep-sea creatures utilize bioluminescence for diverse survival strategies: attracting prey, confusing predators, or communicating with potential mates in perpetual darkness.",
+                    question: "How do deep-sea creatures produce bioluminescent light?",
+                    options: [
+                        "A) By absorbing sunlight during the day",
+                        "B) Through a chemical reaction between luciferase and luciferin",
+                        "C) By generating high-voltage electrical current",
+                        "D) By consuming fluorescent surface plankton"
+                    ],
+                    correct: 1,
+                    explanation: "Reaksi kimia antara enzim luciferase dan substrat luciferin menghasilkan cahaya bioluminesensi."
+                },
+                {
+                    passageTitle: "Bioluminescence in Marine Organisms",
+                    passageText: "Bioluminescence—the production and emission of light by a living organism...",
+                    question: "Which of the following is NOT a stated purpose of marine bioluminescence?",
+                    options: ["A) Confusing predators", "B) Attracting prey", "C) Generating thermal body heat", "D) Communicating with mates"],
+                    correct: 2,
+                    explanation: "Teks tidak menyebutkan penggunaan cahaya untuk memproduksi panas tubuh (*thermal body heat*)."
+                },
+                {
+                    passageTitle: "The Atmosphere of Mars",
+                    passageText: "Mars possesses a thin atmosphere composed of roughly 95% carbon dioxide, 2.6% nitrogen, and 1.9% argon. Because the Martian atmosphere is less than 1% as dense as Earth's, it cannot retain solar thermal energy effectively. Consequently, surface temperatures fluctuate wildly, dropping to minus 125 degrees Celsius near the poles during winter.",
+                    question: "Why does Mars experience extreme surface temperature drops?",
+                    options: [
+                        "A) Because it is made entirely of solid ice.",
+                        "B) Because its atmosphere is too thin to trap heat.",
+                        "C) Because it receives no sunlight whatsoever.",
+                        "D) Because its carbon dioxide content is too low."
+                    ],
+                    correct: 1,
+                    explanation: "Atmosfer Mars sangat tipis (kurang dari 1% densitas Bumi) sehingga tidak mampu menyimpan energi panas matahari."
+                },
+                {
+                    passageTitle: "The Atmosphere of Mars",
+                    passageText: "Mars possesses a thin atmosphere composed of roughly 95% carbon dioxide...",
+                    question: "The word 'fluctuate' is closest in meaning to:",
+                    options: ["A) Vary / Change unpredictably", "B) Remain constant", "C) Rise steadily", "D) Freeze instantly"],
+                    correct: 0,
+                    explanation: "'Fluctuate' bermakna berubah-ubah atau berfluktuasi (*vary/change*)."
+                },
+                {
+                    passageTitle: "The Origin of Paper Currency",
+                    passageText: "Paper currency was first developed during the Tang Dynasty in 7th-century China, though true standardized paper money emerged during the Song Dynasty in the 11th century. Merchant syndicates originally issued paper receipts as proof of deposit for heavy bronze coins. Recognizing the efficiency of paper notes for long-distance commerce, the central government eventually assumed a monopoly over paper money printing.",
+                    question: "What initially prompted the creation of paper currency in China?",
+                    options: [
+                        "A) A total shortage of bronze in Chinese mines",
+                        "B) The inconvenience of carrying heavy bronze coinage for trade",
+                        "C) Decrees issued by European trading partners",
+                        "D) The desire to eliminate commercial taxes"
+                    ],
+                    correct: 1,
+                    explanation: "Uang kertas awalnya dibuat sebagai resi atas koin perunggu yang sangat berat dibawa berdagang jarak jauh."
+                },
+                {
+                    passageTitle: "The Origin of Paper Currency",
+                    passageText: "Paper currency was first developed during the Tang Dynasty in 7th-century China...",
+                    question: "The word 'assumed' in the last sentence is closest in meaning to:",
+                    options: ["A) Took over / Took control of", "B) Guessed", "C) Rejected", "D) Financed"],
+                    correct: 0,
+                    explanation: "'Assumed a monopoly' berarti mengambil alih atau mengendalikan hak monopoli (*took over/took control*)."
+                },
+                {
+                    passageTitle: "Glacier Dynamics",
+                    passageText: "Glaciers are massive rivers of ice that move slowly under the influence of gravity. A glacier forms when annual snow accumulation exceeds summer melt over decades. As snow compresses into dense glacial ice, its sheer weight causes internal deformation and basal sliding, allowing the ice mass to flow downhill toward lower elevations.",
+                    question: "What condition is essential for a glacier to begin forming?",
+                    options: [
+                        "A) Continuous rainfall throughout the summer",
+                        "B) Snowfall exceeding annual melting rate over time",
+                        "C) Active volcanic heating beneath the ice sheet",
+                        "D) Rapid wind speeds exceeding 100 km/h"
+                    ],
+                    correct: 1,
+                    explanation: "Gletser terbentuk ketika akumulasi salju tahunan melebihi tingkat pencairan di musim panas selama bertahun-tahun."
+                },
+                {
+                    passageTitle: "Glacier Dynamics",
+                    passageText: "Glaciers are massive rivers of ice that move slowly under gravity...",
+                    question: "The phrase 'basal sliding' refers to movement at the:",
+                    options: ["A) Top surface", "B) Bottom base of the glacier", "C) Center core", "D) Surrounding air"],
+                    correct: 1,
+                    explanation: "'Basal' merujuk pada bagian dasar/bawah dari gletser."
+                },
+                {
+                    passageTitle: "Coral Reef Bleaching",
+                    passageText: "Coral reefs are among the most biodiversity-rich ecosystems on Earth. Coral polyps live in a symbiotic relationship with microscopic algae called zooxanthellae, which reside within coral tissues and provide them with nutrients via photosynthesis. When water temperatures rise due to climate anomalies, corals become stressed and expel these algae, turning stark white—a phenomenon known as coral bleaching.",
+                    question: "What directly causes corals to expel zooxanthellae during bleaching events?",
+                    options: [
+                        "A) Elevated ocean water temperatures",
+                        "B) Complete absence of sunlight",
+                        "C) Attack by deep-sea predatory fish",
+                        "D) Excessive coral growth"
+                    ],
+                    correct: 0,
+                    explanation: "Penyebab terumbu karang mengeluarkan alga zooxanthellae adalah kenaikan suhu air laut (*elevated water temperatures*)."
+                },
+                {
+                    passageTitle: "Coral Reef Bleaching",
+                    passageText: "Coral reefs are among the most biodiversity-rich ecosystems on Earth...",
+                    question: "The relationship between coral polyps and zooxanthellae is described as:",
+                    options: ["A) Parasitic", "B) Symbiotic / Mutually beneficial", "C) Competitive", "D) Predatory"],
+                    correct: 1,
+                    explanation: "Hubungan tersebut digambarkan sebagai simbiosis mutualisme yang saling menguntungkan."
+                },
+                {
+                    passageTitle: "The Discovery of Antibiotics",
+                    passageText: "In 1928, Scottish biologist Alexander Fleming made a chance discovery that altered the course of medicine. Returning to his lab after vacation, he noticed a contaminated Petri dish of Staphylococcus bacteria had developed a clear zone where mold was growing. The mold, *Penicillium notatum*, produced a substance that inhibited bacterial cell wall synthesis. This breakthrough ushered in the age of modern antibiotics.",
+                    question: "How was penicillin discovered by Fleming?",
+                    options: [
+                        "A) Through a deliberate genetic engineering experiment",
+                        "B) By accidental observation of a contaminated bacterial culture",
+                        "C) By analyzing soil samples from tropical rainforests",
+                        "D) Through a government-funded pharmaceutical search"
+                    ],
+                    correct: 1,
+                    explanation: "Penemuan tersebut terjadi secara tidak sengaja (*chance discovery*) saat mengamati cawan petri yang terkontaminasi jamur."
+                }
+            ]
+        };
+
+        // GLOBAL APP STATE
+        let activeTestSession = 'full'; // 'full' or 'listening', 'structure', 'reading'
+        let currentMode = 'exam'; // 'exam' or 'practice'
+        
+        // Active Questions per Section (25 each)
+        let activeQuestionSet = {
+            listening: [],
+            structure: [],
+            reading: []
+        };
+        
+        let activeSectionSequence = ['listening', 'structure', 'reading'];
+        let currentSequenceIndex = 0; // 0: Listening, 1: Structure, 2: Reading
+        
+        let sectionQuestions = []; // Currently displayed 25 questions
+        let currentIndex = 0; // Current question index (0-24)
+        
+        // Accumulated Answers & Bookmarks across sections
+        let allUserAnswers = {}; // { qGlobalId: selectedIndex }
+        let bookmarked = new Set();
+        
+        let timerInterval = null;
+        let timeRemaining = 20 * 60; // seconds
+
+        // UTILITY: SHUFFLE ARRAY (Fisher-Yates)
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // INITIALIZATION
+        window.onload = function() {
+            showHomeView();
+        };
+
+        function showHomeView() {
+            clearInterval(timerInterval);
+            document.getElementById('view-home').classList.remove('hidden');
+            document.getElementById('view-test').classList.add('hidden');
+            document.getElementById('view-result').classList.add('hidden');
+            document.getElementById('test-header-controls').classList.add('hidden');
+            document.getElementById('main-header-nav').classList.remove('hidden');
+        }
+
+        // START TEST OR SINGLE SESSION
+        function startTestMode(sessionFilter = 'full', mode = 'exam') {
+            activeTestSession = sessionFilter;
+            currentMode = mode;
+            allUserAnswers = {};
+            bookmarked.clear();
+
+            // 1. Prepare & Shuffle 25 questions per section
+            activeQuestionSet.listening = shuffleArray(rawQuestionBank.listening).slice(0, 25).map((q, idx) => ({ ...q, section: 'listening', globalId: `l_${idx}` }));
+            activeQuestionSet.structure = shuffleArray(rawQuestionBank.structure).slice(0, 25).map((q, idx) => ({ ...q, section: 'structure', globalId: `s_${idx}` }));
+            activeQuestionSet.reading = shuffleArray(rawQuestionBank.reading).slice(0, 25).map((q, idx) => ({ ...q, section: 'reading', globalId: `r_${idx}` }));
+
+            // 2. Setup sequence
+            if (sessionFilter === 'full') {
+                activeSectionSequence = ['listening', 'structure', 'reading'];
+            } else {
+                activeSectionSequence = [sessionFilter];
+            }
+
+            currentSequenceIndex = 0;
+
+            // UI Mode Setup
+            document.getElementById('mode-badge').textContent = mode === 'exam' ? 'Simulasi Exam' : 'Mode Latihan';
+            document.getElementById('mode-badge').className = mode === 'exam' 
+                ? 'bg-blue-800 text-blue-200 text-xs px-2.5 py-0.5 rounded-full font-medium ml-2'
+                : 'bg-emerald-800 text-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-medium ml-2';
+
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-result').classList.add('hidden');
+            document.getElementById('view-test').classList.remove('hidden');
+            document.getElementById('test-header-controls').classList.remove('hidden');
+            document.getElementById('main-header-nav').classList.add('hidden');
+
+            loadCurrentSection();
+        }
+
+        // LOAD CURRENT SECTION (Listening, Structure, or Reading)
+        function loadCurrentSection() {
+            const currentSectionKey = activeSectionSequence[currentSequenceIndex];
+            sectionQuestions = activeQuestionSet[currentSectionKey];
+            currentIndex = 0;
+
+            // Update Header Submit Button Label
+            const submitLabel = document.getElementById('submit-btn-label');
+            if (currentSequenceIndex === activeSectionSequence.length - 1) {
+                submitLabel.textContent = "Selesaikan & Lihat Hasil";
+            } else {
+                submitLabel.textContent = `Lanjut ke Sesi ${activeSectionSequence[currentSequenceIndex + 1].toUpperCase()}`;
+            }
+
+            // Section Timer Allocation
+            if (currentMode === 'exam') {
+                if (currentSectionKey === 'listening') timeRemaining = 20 * 60;
+                else if (currentSectionKey === 'structure') timeRemaining = 15 * 60;
+                else if (currentSectionKey === 'reading') timeRemaining = 20 * 60;
+                startTimer();
+            } else {
+                document.getElementById('timer-display').textContent = "Mode Latihan (Tanpa Batas)";
+            }
+
+            renderQuestion();
+        }
+
+        // TIMER CONTROLLER
+        function startTimer() {
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    alert(`Waktu untuk Sesi ${activeSectionSequence[currentSequenceIndex].toUpperCase()} telah habis!`);
+                    proceedToNextSectionOrFinish();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            document.getElementById('timer-display').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // DUAL VOICE SYNTHESIS FOR LISTENING DIALOGUES (Male & Female Voices)
+        function playDualVoiceListening() {
+            const q = sectionQuestions[currentIndex];
+            if (!q.dialogue || !('speechSynthesis' in window)) {
+                alert("Audio tidak tersedia atau browser tidak mendukung fitur sintesis suara.");
+                return;
+            }
+
+            window.speechSynthesis.cancel(); // Stop active audio
+
+            const voices = window.speechSynthesis.getVoices();
+            let maleVoice = voices.find(v => v.lang.includes('en') && (v.name.includes('Male') || v.name.includes('David') || v.name.includes('George') || v.name.includes('James'))) || voices[0];
+            let femaleVoice = voices.find(v => v.lang.includes('en') && (v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Hazel') || v.name.includes('Samantha'))) || voices[0];
+
+            const visualizer = document.getElementById('audio-visualizer');
+            const btn = document.getElementById('play-audio-btn');
+            if (visualizer) visualizer.classList.remove('hidden');
+            if (btn) btn.disabled = true;
+
+            let dialogueIndex = 0;
+
+            function speakNextLine() {
+                if (dialogueIndex >= q.dialogue.length) {
+                    if (visualizer) visualizer.classList.add('hidden');
+                    if (btn) btn.disabled = false;
+                    return;
+                }
+
+                const line = q.dialogue[dialogueIndex];
+                const utterance = new SpeechSynthesisUtterance(line.text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.92;
+
+                if (line.speaker === "Man") {
+                    if (maleVoice) utterance.voice = maleVoice;
+                    utterance.pitch = 0.85; // Lower pitch for male voice
+                } else {
+                    if (femaleVoice) utterance.voice = femaleVoice;
+                    utterance.pitch = 1.15; // Higher pitch for female voice
+                }
+
+                utterance.onend = () => {
+                    dialogueIndex++;
+                    setTimeout(speakNextLine, 300); // Brief pause between lines
+                };
+
+                utterance.onerror = () => {
+                    if (visualizer) visualizer.classList.add('hidden');
+                    if (btn) btn.disabled = false;
+                };
+
+                window.speechSynthesis.speak(utterance);
+            }
+
+            speakNextLine();
+        }
+
+        // RENDER QUESTION CONTENT
+        function renderQuestion() {
+            const q = sectionQuestions[currentIndex];
+            const secName = q.section.toUpperCase();
+
+            document.getElementById('section-indicator').textContent = secName;
+            document.getElementById('left-panel-title').innerHTML = `<i class="fa-solid fa-file-text mr-2 text-toefl-lightBlue"></i> Sesi: ${secName} Comprehension`;
+
+            // Render Left Panel Content (Dialogue or Passage)
+            const leftContent = document.getElementById('left-panel-content');
+            if (q.section === 'listening') {
+                leftContent.innerHTML = `
+                    <div class="text-center py-6">
+                        <div class="w-20 h-20 bg-blue-100 text-toefl-lightBlue rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner">
+                            <i class="fa-solid fa-headphones"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-lg mb-1">TOEFL Listening Audio Prompt</h3>
+                        <p class="text-xs text-slate-500 mb-6 max-w-sm mx-auto">Percakapan dua arah antara pria & wanita. Klik tombol di bawah untuk mendengarkan audio.</p>
+                        
+                        <button id="play-audio-btn" onclick="playDualVoiceListening()" class="bg-toefl-lightBlue hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-full shadow-lg transition inline-flex items-center space-x-2 text-sm">
+                            <i class="fa-solid fa-circle-play text-lg"></i> <span>Putar Audio Percakapan</span>
+                        </button>
+
+                        <div id="audio-visualizer" class="flex justify-center items-end space-x-1.5 h-8 mt-6 hidden">
+                            <span class="w-1.5 bg-toefl-lightBlue rounded-full audio-wave-bar" style="animation-delay: 0.1s"></span>
+                            <span class="w-1.5 bg-toefl-lightBlue rounded-full audio-wave-bar" style="animation-delay: 0.3s"></span>
+                            <span class="w-1.5 bg-toefl-lightBlue rounded-full audio-wave-bar" style="animation-delay: 0.2s"></span>
+                            <span class="w-1.5 bg-toefl-lightBlue rounded-full audio-wave-bar" style="animation-delay: 0.4s"></span>
+                            <span class="w-1.5 bg-toefl-lightBlue rounded-full audio-wave-bar" style="animation-delay: 0.1s"></span>
+                        </div>
+                    </div>
+                `;
+            } else if (q.section === 'structure') {
+                leftContent.innerHTML = `
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 text-xs text-slate-600 leading-relaxed">
+                        <h4 class="font-bold text-slate-800 text-sm mb-3 uppercase tracking-wider flex items-center">
+                            <i class="fa-solid fa-pen-nib mr-2 text-amber-500"></i> Panduan Structure & Written Expression
+                        </h4>
+                        <p class="mb-3">Bagian ini menguji kemampuan tata bahasa baku Inggris tingkat akademik meliputi kesesuaian klausa, subjek-kata kerja, dan analisis kesalahan penulisan.</p>
+                        <ul class="list-disc pl-4 space-y-1.5 text-slate-500">
+                            <li>Pilihlah opsi kata/frasa yang paling tepat untuk melengkapi kalimat.</li>
+                            <li>Pada soal identifikasi kesalahan, pilihlah kata yang **salah** secara aturan gramatikal baku.</li>
+                        </ul>
+                    </div>
+                `;
+            } else if (q.section === 'reading') {
+                leftContent.innerHTML = `
+                    <div class="space-y-4 text-xs md:text-sm leading-relaxed text-slate-700">
+                        <h4 class="font-bold text-base text-slate-900 border-b pb-2">${q.passageTitle || 'Reading Wacana'}</h4>
+                        <div>${q.passageText || ''}</div>
+                    </div>
+                `;
+            }
+
+            // Question Header & Index
+            document.getElementById('question-number-badge').textContent = `${currentIndex + 1} dari ${sectionQuestions.length}`;
+            document.getElementById('question-text').innerHTML = `${currentIndex + 1}. ${q.question}`;
+
+            // Render Options
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            const selectedOption = allUserAnswers[q.globalId];
+
+            q.options.forEach((opt, idx) => {
+                const isSelected = selectedOption === idx;
+                let optionStyle = 'border-slate-200 bg-white hover:border-toefl-lightBlue hover:bg-blue-50/50';
+                
+                if (isSelected) {
+                    optionStyle = 'border-toefl-lightBlue bg-blue-50 text-toefl-blue ring-2 ring-toefl-lightBlue/30';
+                }
+
+                if (currentMode === 'practice' && selectedOption !== undefined) {
+                    if (idx === q.correct) {
+                        optionStyle = 'border-emerald-500 bg-emerald-50 text-emerald-900 ring-2 ring-emerald-300';
+                    } else if (isSelected && selectedOption !== q.correct) {
+                        optionStyle = 'border-red-500 bg-red-50 text-red-900';
+                    }
+                }
+
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-xl border text-sm font-medium transition flex items-center justify-between ${optionStyle}`;
+                btn.onclick = () => selectOption(q.globalId, idx);
+                btn.innerHTML = `
+                    <span>${opt}</span>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check text-toefl-lightBlue text-base"></i>' : '<i class="fa-regular fa-circle text-slate-300 text-base"></i>'}
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Explanation Box (Practice Mode)
+            const explanationBox = document.getElementById('explanation-box');
+            if (currentMode === 'practice' && selectedOption !== undefined) {
+                explanationBox.classList.remove('hidden');
+                document.getElementById('explanation-text').textContent = q.explanation;
+            } else {
+                explanationBox.classList.add('hidden');
+            }
+
+            // Bookmark Button UI
+            const bookmarkBtn = document.getElementById('bookmark-btn');
+            if (bookmarked.has(q.globalId)) {
+                bookmarkBtn.className = 'text-amber-500 font-bold text-sm p-1.5 rounded transition';
+            } else {
+                bookmarkBtn.className = 'text-slate-400 hover:text-amber-500 text-sm p-1.5 rounded transition';
+            }
+
+            // Prev Button state
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('prev-btn').classList.toggle('opacity-50', currentIndex === 0);
+
+            renderGridModal();
+        }
+
+        function selectOption(globalId, optionIndex) {
+            allUserAnswers[globalId] = optionIndex;
+            renderQuestion();
+        }
+
+        function toggleBookmark() {
+            const q = sectionQuestions[currentIndex];
+            if (bookmarked.has(q.globalId)) {
+                bookmarked.delete(q.globalId);
+            } else {
+                bookmarked.add(q.globalId);
+            }
+            renderQuestion();
+        }
+
+        function nextQuestion() {
+            if (currentIndex < sectionQuestions.length - 1) {
+                currentIndex++;
+                renderQuestion();
+            } else {
+                confirmSubmitCurrentSection();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
+            }
+        }
+
+        // GRID MODAL NAVIGATION
+        function toggleGridModal() {
+            const modal = document.getElementById('grid-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function renderGridModal() {
+            const grid = document.getElementById('question-grid');
+            grid.innerHTML = '';
+
+            sectionQuestions.forEach((q, idx) => {
+                const isAnswered = allUserAnswers[q.globalId] !== undefined;
+                const isBookmarked = bookmarked.has(q.globalId);
+                const isCurrent = idx === currentIndex;
+
+                let btnStyle = 'bg-slate-100 text-slate-700 border-slate-200';
+                if (isAnswered) btnStyle = 'bg-toefl-blue text-white font-bold';
+                if (isBookmarked) btnStyle = 'bg-amber-400 text-slate-900 font-bold';
+                if (isCurrent) btnStyle += ' ring-2 ring-offset-1 ring-toefl-lightBlue';
+
+                const btn = document.createElement('button');
+                btn.className = `h-10 rounded-lg text-xs font-semibold flex items-center justify-center border transition ${btnStyle}`;
+                btn.textContent = idx + 1;
+                btn.onclick = () => {
+                    currentIndex = idx;
+                    renderQuestion();
+                    toggleGridModal();
+                };
+                grid.appendChild(btn);
+            });
+        }
+
+        // SECTION SWITCHING & FINAL SUBMISSION LOGIC
+        function confirmSubmitCurrentSection() {
+            const currentSectionName = activeSectionSequence[currentSequenceIndex].toUpperCase();
+            const unanswered = sectionQuestions.filter(q => allUserAnswers[q.globalId] === undefined).length;
+            
+            let message = `Apakah Anda yakin ingin mengakhiri Sesi ${currentSectionName}?`;
+            if (unanswered > 0) {
+                message = `Masih ada ${unanswered} soal di Sesi ${currentSectionName} yang belum dijawab. Yakin ingin melanjutkan?`;
+            }
+
+            if (confirm(message)) {
+                proceedToNextSectionOrFinish();
+            }
+        }
+
+        function proceedToNextSectionOrFinish() {
+            if (currentSequenceIndex < activeSectionSequence.length - 1) {
+                currentSequenceIndex++;
+                alert(`Sesi berikutnya: ${activeSectionSequence[currentSequenceIndex].toUpperCase()} Comprehension.`);
+                loadCurrentSection();
+            } else {
+                calculateAndShowFinalResults();
+            }
+        }
+
+        // SCORE COMPUTATION & EVALUATION REPORT
+        function calculateAndShowFinalResults() {
+            clearInterval(timerInterval);
+
+            let listeningCorrect = 0, listeningTotal = activeQuestionSet.listening.length;
+            let structureCorrect = 0, structureTotal = activeQuestionSet.structure.length;
+            let readingCorrect = 0, readingTotal = activeQuestionSet.reading.length;
+
+            activeQuestionSet.listening.forEach(q => {
+                if (allUserAnswers[q.globalId] === q.correct) listeningCorrect++;
+            });
+            activeQuestionSet.structure.forEach(q => {
+                if (allUserAnswers[q.globalId] === q.correct) structureCorrect++;
+            });
+            activeQuestionSet.reading.forEach(q => {
+                if (allUserAnswers[q.globalId] === q.correct) readingCorrect++;
+            });
+
+            // Standard Scaled Calculation (Skala 31-68 per sesi)
+            const getScaledScore = (correct, total) => {
+                if (total === 0) return 31;
+                const ratio = correct / total;
+                return Math.round(31 + (ratio * 37));
+            };
+
+            const lScaled = listeningTotal > 0 ? getScaledScore(listeningCorrect, listeningTotal) : 31;
+            const sScaled = structureTotal > 0 ? getScaledScore(structureCorrect, structureTotal) : 31;
+            const rScaled = readingTotal > 0 ? getScaledScore(readingCorrect, readingTotal) : 31;
+
+            // Formulasi Skor TOEFL ITP Final: ((L + S + R) * 10) / 3
+            const finalTOEFLScore = Math.round(((lScaled + sScaled + rScaled) * 10) / 3);
+
+            // Render Skor & Breakdown
+            document.getElementById('converted-score').textContent = finalTOEFLScore;
+
+            document.getElementById('listening-score-breakdown').textContent = `${listeningCorrect} / ${listeningTotal}`;
+            document.getElementById('listening-converted').textContent = `Skor Sesi: ${lScaled * 10}`;
+
+            document.getElementById('structure-score-breakdown').textContent = `${structureCorrect} / ${structureTotal}`;
+            document.getElementById('structure-converted').textContent = `Skor Sesi: ${sScaled * 10}`;
+
+            document.getElementById('reading-score-breakdown').textContent = `${readingCorrect} / ${readingTotal}`;
+            document.getElementById('reading-converted').textContent = `Skor Sesi: ${rScaled * 10}`;
+
+            // Proficiency Description
+            const levelElem = document.getElementById('proficiency-level');
+            const descElem = document.getElementById('proficiency-desc');
+
+            if (finalTOEFLScore >= 550) {
+                levelElem.textContent = "Advanced Level (CEFR C1)";
+                descElem.textContent = "Selamat! Penguasaan bahasa Inggris akademik Anda sangat memadai untuk standar universitas internasional dan beasiswa luar negeri.";
+            } else if (finalTOEFLScore >= 460) {
+                levelElem.textContent = "Intermediate Level (CEFR B1/B2)";
+                descElem.textContent = "Anda memiliki pemahaman tata bahasa dan analisis wacana yang cukup baik. Fokuskan latihan pada akselerasi pemahaman bacaan dan analisis kalimat kompleks.";
+            } else {
+                levelElem.textContent = "Elementary Level (CEFR A2/B1)";
+                descElem.textContent = "Anda disarankan memperkuat fondasi tata bahasa (grammar dasar) serta memperbanyak kosakata akademik secara rutin.";
+            }
+
+            // Recommendations Generator
+            generateRecommendations(listeningCorrect, listeningTotal, structureCorrect, structureTotal, readingCorrect, readingTotal);
+
+            // Switch to Result View
+            document.getElementById('view-test').classList.add('hidden');
+            document.getElementById('test-header-controls').classList.add('hidden');
+            document.getElementById('main-header-nav').classList.remove('hidden');
+            document.getElementById('view-result').classList.remove('hidden');
+        }
+
+        function generateRecommendations(lC, lT, sC, sT, rC, rT) {
+            const container = document.getElementById('recommendations-container');
+            container.innerHTML = '';
+
+            const recs = [];
+
+            if (lT > 0 && (lC / lT) < 0.8) {
+                recs.push({
+                    icon: 'fa-headphones',
+                    color: 'text-blue-500 bg-blue-50',
+                    title: 'Evaluasi Sesi Listening',
+                    desc: 'Tingkatkan pemahaman dialog percakapan idiom dan kata sepadan (synonym) antara pembicara pria dan wanita.'
+                });
+            }
+
+            if (sT > 0 && (sC / sT) < 0.8) {
+                recs.push({
+                    icon: 'fa-pen-nib',
+                    color: 'text-amber-500 bg-amber-50',
+                    title: 'Evaluasi Sesi Structure',
+                    desc: 'Pelajari kembali aturan tata bahasa utama seperti Inversion, Subjunctive, Reduced Clauses, dan Adverb-Adjective Placement.'
+                });
+            }
+
+            if (rT > 0 && (rC / rT) < 0.8) {
+                recs.push({
+                    icon: 'fa-book-open',
+                    color: 'text-purple-500 bg-purple-50',
+                    title: 'Evaluasi Sesi Reading',
+                    desc: 'Gunakan teknik Skimming untuk menemukan topik utama wacana dan Scanning untuk menemukan detail fakta spesifik.'
+                });
+            }
+
+            recs.push({
+                icon: 'fa-clock text-emerald-500',
+                color: 'bg-emerald-50 text-emerald-600',
+                title: 'Manajemen Waktu Pengerjaan Sesi',
+                desc: 'Alokasikan rata-rata 35 detik per soal Structure agar menyisakan waktu lebih longgar untuk membaca wacana Reading.'
+            });
+
+            recs.forEach(r => {
+                const item = document.createElement('div');
+                item.className = 'p-4 rounded-xl border border-slate-200 flex items-start space-x-3.5 bg-white';
+                item.innerHTML = `
+                    <div class="p-2.5 rounded-lg ${r.color} text-base shrink-0">
+                        <i class="fa-solid ${r.icon}"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm mb-0.5">${r.title}</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">${r.desc}</p>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // REVIEW ALL QUESTIONS ACROSS SECTIONS
+        function startReviewAnswers() {
+            currentMode = 'practice';
+            currentIndex = 0;
+            currentSequenceIndex = 0;
+            sectionQuestions = activeQuestionSet[activeSectionSequence[0]];
+
+            document.getElementById('view-result').classList.add('hidden');
+            document.getElementById('view-test').classList.remove('hidden');
+            document.getElementById('test-header-controls').classList.remove('hidden');
+            document.getElementById('timer-display').textContent = "Mode Review Pembahasan";
+            
+            renderQuestion();
+        }
+    </script>
+</body>
+</html>
